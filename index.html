@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>COACH K 운동 기록 앱</title>
+<meta name="description" content="매일의 운동을 쉽게 남기고, 쌓여가는 성장을 눈으로 확인하는 COACH K 운동 기록 앱">
+
+<!-- 홈 화면 앱 설정 (안드로이드·공통) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0F3D2A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="코치K 기록">
+<!-- 홈 화면 앱 설정 (아이폰) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="코치K 기록">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* 초록 테마 색상 — 여기 값만 바꾸면 전체 색이 바뀝니다 */
+  :root {
+    --bg: #F4FAF5;          /* 기본 배경 (아주 연한 초록) */
+    --surface: #FFFFFF;     /* 카드 배경 */
+    --deep: #0F3D2A;        /* 진한 초록 (히어로·글자) */
+    --deep-2: #165A3D;      /* 진한 초록 2 */
+    --accent: #2BB673;      /* 대표 초록 (버튼) */
+    --accent-hover: #229A60;
+    --lime: #B8F2C9;        /* 밝은 초록 포인트 */
+    --soft: #E3F4E8;        /* 아이콘 배경 */
+    --line: #CFE6D6;        /* 테두리 */
+    --text: #12291E;        /* 본문 글자 */
+    --muted: #4E6B5C;       /* 보조 글자 */
+    --on-deep: #F1FBF4;     /* 진한 초록 위 글자 */
+    --gold: #D6AC42;        /* 설치 안내 강조 (브랜드 금색) */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  /* 상단 바 */
+  header { background: var(--deep); padding-top: env(safe-area-inset-top, 0px); }
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    height: 64px;
+  }
+  .brand {
+    color: var(--on-deep); font-weight: 900; letter-spacing: 0.12em; font-size: 17px;
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  }
+  .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .nav { display: flex; align-items: center; gap: 8px; }
+  .nav-cta {
+    color: var(--deep); background: var(--lime); text-decoration: none;
+    font-weight: 700; font-size: 14px; padding: 8px 16px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .nav-install {
+    font: inherit; font-weight: 700; font-size: 14px; cursor: pointer;
+    color: var(--on-deep); background: transparent;
+    border: 1px solid rgba(241,251,244,0.4); padding: 7px 14px; border-radius: 999px;
+    white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nav-install svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ① 큰 제목 */
+  .hero {
+    background:
+      radial-gradient(circle at 85% 20%, rgba(43,182,115,0.35), transparent 45%),
+      linear-gradient(160deg, var(--deep) 0%, var(--deep-2) 100%);
+    color: var(--on-deep);
+    padding: 96px 0 112px;
+    text-align: center;
+  }
+  .eyebrow {
+    display: inline-block; font-size: 14px; font-weight: 700;
+    color: var(--lime); border: 1px solid rgba(184,242,201,0.45);
+    padding: 6px 14px; border-radius: 999px; margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: clamp(34px, 7vw, 64px);
+    font-weight: 900; line-height: 1.25; letter-spacing: -0.02em;
+    margin-bottom: 22px;
+  }
+  .hero h1 em { font-style: normal; color: var(--lime); }
+  .hero p.sub {
+    font-size: clamp(16px, 2.4vw, 20px);
+    color: rgba(241,251,244,0.85);
+    max-width: 560px; margin: 0 auto 40px;
+  }
+
+  .btn {
+    display: inline-block; background: var(--accent); color: #FFFFFF;
+    font-size: 18px; font-weight: 700; text-decoration: none;
+    padding: 18px 40px; border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(43,182,115,0.35);
+    transition: background .2s, transform .2s;
+  }
+  .btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+  .btn-note { display: block; margin-top: 14px; font-size: 14px; color: rgba(241,251,244,0.7); }
+
+  /* ② 기능 3개 */
+  .features { padding: 96px 0; }
+  .section-head { text-align: center; margin-bottom: 52px; }
+  .section-head .label {
+    color: var(--accent); font-weight: 700; font-size: 14px; letter-spacing: 0.08em;
+  }
+  .section-head h2 {
+    font-size: clamp(26px, 4.5vw, 38px); font-weight: 900;
+    color: var(--deep); margin-top: 8px; line-height: 1.35;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 20px; padding: 36px 28px;
+  }
+  .icon {
+    width: 56px; height: 56px; border-radius: 16px; background: var(--soft);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 22px;
+  }
+  .icon svg { width: 28px; height: 28px; stroke: var(--deep-2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card .num { color: var(--accent); font-weight: 900; font-size: 14px; }
+  .card h3 { font-size: 21px; font-weight: 700; color: var(--deep); margin: 4px 0 10px; line-height: 1.4; }
+  .card p { color: var(--muted); font-size: 16px; }
+
+  /* ③ 무료체험 */
+  .cta { padding: 0 0 96px; }
+  .cta-box {
+    background: linear-gradient(140deg, var(--deep) 0%, var(--deep-2) 100%);
+    color: var(--on-deep); border-radius: 28px;
+    text-align: center; padding: 72px 28px;
+  }
+  .cta-box h2 { font-size: clamp(26px, 4.5vw, 40px); font-weight: 900; line-height: 1.35; margin-bottom: 14px; }
+  .cta-box p { color: rgba(241,251,244,0.85); font-size: 17px; margin-bottom: 34px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 20px calc(40px + env(safe-area-inset-bottom, 0px)); }
+  .foot-install {
+    font: inherit; font-size: 14px; font-weight: 700; color: var(--deep-2);
+    background: none; border: 0; text-decoration: underline; text-underline-offset: 3px;
+    cursor: pointer; margin-bottom: 10px; padding: 6px;
+  }
+
+  /* 휴대폰 */
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+    .hero { padding: 72px 0 84px; }
+    .features { padding: 72px 0; }
+    .card { padding: 28px 24px; }
+    .btn { width: 100%; max-width: 360px; padding: 18px 20px; }
+  }
+  @media (max-width: 345px) {
+    .brand { font-size: 15px; letter-spacing: 0.08em; }
+    .nav-install .txt { display: none; }
+    .nav-install { padding: 7px 10px; }
+  }
+
+  /* 이미 홈 화면 앱으로 열었으면 설치 버튼 숨김 */
+  html.is-app .nav-install, html.is-app .foot-install { display: none; }
+
+  /* ───────── 처음 방문 시 뜨는 설치 안내 ───────── */
+  .install-bar {
+    position: fixed; left: 12px; right: 12px; z-index: 50;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    max-width: 480px; margin: 0 auto;
+    background: #0B0B0B; color: #FFF; border: 1px solid rgba(214,172,66,0.45);
+    border-radius: 20px; padding: 16px 16px 14px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    transform: translateY(140%); transition: transform .45s cubic-bezier(.2,.9,.3,1);
+  }
+  .install-bar.show { transform: translateY(0); }
+  .install-bar .row { display: flex; gap: 14px; align-items: center; }
+  .install-bar img { width: 56px; height: 56px; border-radius: 13px; flex: none; }
+  .install-bar h2 { font-size: 18px; font-weight: 900; line-height: 1.35; }
+  .install-bar h2 em { font-style: normal; color: var(--gold); }
+  .install-bar p { font-size: 14px; color: rgba(255,255,255,0.78); line-height: 1.5; margin-top: 2px; }
+  .install-bar .actions { display: flex; gap: 8px; margin-top: 14px; }
+  .ib-primary, .ib-later {
+    font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; border-radius: 12px;
+    padding: 12px 10px; white-space: nowrap; text-align: center; text-decoration: none;
+  }
+  .ib-primary { flex: 1.4; background: var(--gold); color: #111; border: 0; }
+  .ib-later { flex: 1; background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.22); }
+  .ib-close {
+    position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border: 0; border-radius: 50%;
+    background: transparent; color: rgba(255,255,255,0.6); font-size: 20px; line-height: 1; cursor: pointer;
+  }
+
+  /* ───────── 설치 방법 안내 창 ───────── */
+  .guide {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    background: rgba(5,12,8,0.6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    align-items: flex-end; justify-content: center;
+  }
+  .guide.open { display: flex; }
+  .sheet {
+    background: #FFF; width: 100%; max-width: 560px; max-height: 92vh; max-height: 92dvh;
+    border-radius: 24px 24px 0 0; display: flex; flex-direction: column;
+    animation: up .35s cubic-bezier(.2,.9,.3,1);
+  }
+  @media (min-width: 640px) { .guide { align-items: center; } .sheet { border-radius: 24px; } }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .sheet-head { padding: 20px 20px 0; position: relative; }
+  .sheet-head .app { display: flex; align-items: center; gap: 12px; padding-right: 40px; }
+  .sheet-head .app img { width: 48px; height: 48px; border-radius: 12px; flex: none; }
+  .sheet-head h2 { font-size: 20px; font-weight: 900; color: #111; line-height: 1.35; }
+  .sheet-head .app p { font-size: 14px; color: #5B5B5B; }
+  .sheet-x {
+    position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 50%;
+    border: 0; background: #F1F1F1; font-size: 20px; cursor: pointer; color: #333;
+  }
+  .tabs { display: flex; gap: 6px; background: #F1F1F1; border-radius: 14px; padding: 5px; margin: 18px 0 4px; }
+  .tab {
+    flex: 1; font: inherit; font-size: 15px; font-weight: 700; color: #666; cursor: pointer;
+    border: 0; background: transparent; border-radius: 10px; padding: 10px 6px; white-space: nowrap;
+  }
+  .tab[aria-selected="true"] { background: #0B0B0B; color: #FFF; }
+  .tab[aria-selected="true"] .mine { color: var(--gold); }
+  .tab .mine { font-size: 12px; margin-left: 4px; }
+
+  .sheet-body { overflow-y: auto; padding: 8px 20px calc(20px + env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling: touch; }
+  .panel[hidden] { display: none; }
+  .panel .browser { font-size: 13px; color: #6A6A6A; margin: 8px 0 12px; }
+  .steps { list-style: none; display: grid; gap: 12px; }
+  .step {
+    display: flex; gap: 14px; align-items: center;
+    border: 1px solid #ECECEC; border-radius: 18px; padding: 12px;
+    background: #FAFAFA;
+  }
+  .step .txt { flex: 1; min-width: 0; }
+  .step .no {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%; background: #0B0B0B; color: var(--gold);
+    font-size: 14px; font-weight: 900; margin-bottom: 6px;
+  }
+  .step h3 { font-size: 16px; font-weight: 700; color: #111; line-height: 1.45; }
+  .step p { font-size: 14px; color: #5B5B5B; line-height: 1.5; margin-top: 4px; }
+  .step b { color: #111; white-space: nowrap; }
+  .kbd {
+    display: inline-flex; align-items: center; justify-content: center; vertical-align: -3px;
+    min-width: 22px; height: 22px; padding: 0 5px; border-radius: 6px;
+    background: #FFF; border: 1px solid #D6D6D6; font-size: 13px; font-weight: 700; color: #0A63E8;
+  }
+  .kbd svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .note {
+    margin-top: 14px; font-size: 13.5px; color: #5B5B5B; line-height: 1.55;
+    background: #FFF8E6; border: 1px solid #F1DFAE; border-radius: 14px; padding: 12px 14px;
+  }
+  .note b { color: #111; }
+  .done-btn {
+    display: block; width: 100%; margin-top: 16px; font: inherit; font-size: 16px; font-weight: 700;
+    background: #0B0B0B; color: #FFF; border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
+  }
+
+  /* ── 그림: 작은 휴대폰 화면 ── */
+  .phone {
+    flex: none; width: 112px; height: 196px; border-radius: 20px; background: #1A1A1A; padding: 6px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  }
+  .scr {
+    position: relative; width: 100%; height: 100%; border-radius: 15px; overflow: hidden;
+    background: #FFF; font-size: 8.5px; color: #222; line-height: 1.3;
+  }
+  .scr .page { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+  .mock-hero { height: 58px; background: linear-gradient(160deg, #0F3D2A, #165A3D); }
+  .mock-line { height: 6px; border-radius: 3px; background: #E2E8E4; margin: 7px 10px 0; }
+  .mock-line.s { width: 55%; }
+  .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.38); }
+  /* 강조 표시(금색 동그라미가 깜빡임) */
+  .hit { position: relative; }
+  .hit::after {
+    content: ""; position: absolute; inset: -5px; border-radius: 10px;
+    border: 2px solid var(--gold); box-shadow: 0 0 0 3px rgba(214,172,66,0.3);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .hit.round::after { border-radius: 50%; }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(1.08); } }
+  @media (prefers-reduced-motion: reduce) { .hit::after { animation: none; } .install-bar { transition: none; } .sheet { animation: none; } }
+  .finger {
+    position: absolute; width: 22px; height: 22px; pointer-events: none;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+  }
+
+  /* 아이폰 사파리 아래 도구 막대 */
+  .ios-bar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: #F6F6F6; border-top: 1px solid #E3E3E3;
+    display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px 3px;
+  }
+  .ios-url { height: 13px; border-radius: 5px; background: #E6E6E6; display: flex; align-items: center; justify-content: center; font-size: 6.5px; color: #555; }
+  .ios-icons { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; color: #0A63E8; }
+  .ios-icons svg, .and-top svg, .sheet-row svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  /* 공유 메뉴 */
+  .ios-sheet {
+    position: absolute; left: 4px; right: 4px; bottom: 4px; background: #F2F2F2; border-radius: 11px; padding: 6px;
+  }
+  .ios-sheet .approw { display: flex; align-items: center; gap: 5px; padding: 2px 2px 6px; border-bottom: 1px solid #E0E0E0; margin-bottom: 4px; }
+  .ios-sheet .approw img { width: 16px; height: 16px; border-radius: 4px; }
+  .sheet-row {
+    display: flex; justify-content: space-between; align-items: center; background: #FFF;
+    padding: 5px 6px; border-radius: 6px; margin-top: 3px; white-space: nowrap; font-size: 8px;
+  }
+  .sheet-row.hit { font-weight: 700; }
+  /* 홈 화면에 추가 창 */
+  .ios-add-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 7px; border-bottom: 1px solid #EEE; font-size: 8px; white-space: nowrap; }
+  .ios-add-top .blue { color: #0A63E8; }
+  .ios-add-top .bold { font-weight: 700; }
+  .ios-add-card { display: flex; gap: 6px; align-items: center; margin: 9px 7px; background: #F5F5F5; border-radius: 8px; padding: 6px; }
+  .ios-add-card img { width: 24px; height: 24px; border-radius: 6px; }
+  .ios-add-card .nm { font-weight: 700; font-size: 8.5px; white-space: nowrap; }
+  .ios-add-card .u { font-size: 6.5px; color: #888; white-space: nowrap; }
+  .ios-toggle { display: flex; justify-content: space-between; align-items: center; margin: 0 7px; background: #F5F5F5; border-radius: 8px; padding: 6px; font-size: 7.5px; white-space: nowrap; }
+  .sw { width: 18px; height: 10px; border-radius: 6px; background: #34C759; position: relative; }
+  .sw::after { content: ""; position: absolute; right: 1px; top: 1px; width: 8px; height: 8px; border-radius: 50%; background: #FFF; }
+  /* 홈 화면 */
+  .home { position: absolute; inset: 0; background: linear-gradient(170deg, #2A3B5A, #6A4C7C 60%, #C98A6B); padding: 18px 8px 0; }
+  .apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px 4px; justify-items: center; }
+  .app-ph { width: 19px; height: 19px; border-radius: 5px; background: rgba(255,255,255,0.35); }
+  .app-ours { grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 3px; margin-top: 4px; }
+  .app-ours img { width: 36px; height: 36px; border-radius: 9px; box-shadow: 0 3px 8px rgba(0,0,0,0.35); }
+  .app-ours span { font-size: 8px; color: #FFF; font-weight: 700; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+
+  /* 안드로이드 크롬 위쪽 주소창 */
+  .and-top {
+    position: absolute; left: 0; right: 0; top: 0; height: 26px; background: #FFF; border-bottom: 1px solid #E8E8E8;
+    display: flex; align-items: center; gap: 4px; padding: 0 5px; color: #444;
+  }
+  .and-url { flex: 1; height: 15px; border-radius: 8px; background: #EFEFEF; font-size: 6.5px; color: #555; display: flex; align-items: center; padding-left: 6px; white-space: nowrap; overflow: hidden; }
+  .and-dots { width: 14px; height: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 12px; line-height: 1; }
+  .and-page { position: absolute; left: 0; right: 0; top: 26px; bottom: 0; }
+  .and-menu {
+    position: absolute; top: 4px; right: 4px; width: 78px; background: #FFF; border-radius: 8px; padding: 4px 0;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+  }
+  .and-menu div { padding: 4px 8px; font-size: 7.5px; white-space: nowrap; }
+  .and-menu .hit { font-weight: 700; margin: 2px 4px; padding: 4px; }
+  .and-dialog {
+    position: absolute; left: 7px; right: 7px; top: 50%; transform: translateY(-50%);
+    background: #FFF; border-radius: 12px; padding: 9px 8px 8px;
+  }
+  .and-dialog .t { font-weight: 700; font-size: 9px; margin-bottom: 7px; }
+  .and-dialog .who { display: flex; align-items: center; gap: 6px; }
+  .and-dialog .who img { width: 24px; height: 24px; border-radius: 50%; }
+  .and-dialog .who b { font-size: 8.5px; display: block; white-space: nowrap; }
+  .and-dialog .who span { font-size: 6.5px; color: #888; white-space: nowrap; }
+  .and-btns { display: flex; justify-content: flex-end; gap: 9px; margin-top: 9px; font-size: 8px; font-weight: 700; color: #1A73E8; }
+  .and-btns .hit { background: #1A73E8; color: #FFF; padding: 3px 8px; border-radius: 10px; }
+
+  @media (max-width: 360px) {
+    .phone { width: 100px; height: 178px; }
+    .step { gap: 10px; padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand"><span class="brand-dot"></span>COACH K</div>
+    <div class="nav">
+      <button class="nav-install" type="button" data-open-guide aria-label="홈 화면에 앱 설치">
+        <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span class="txt">앱 설치</span>
+      </button>
+      <a class="nav-cta" href="#trial">무료체험</a>
+    </div>
+  </div>
+</header>
+
+<!-- ① 큰 제목 -->
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">운동 기록 앱</span>
+    <h1>오늘의 운동이<br><em>내일의 몸</em>을 만듭니다</h1>
+    <p class="sub">기록하는 순간부터 달라집니다. 매일의 운동을 쉽게 남기고, 쌓여가는 성장을 눈으로 확인해 보세요.</p>
+    <a class="btn" href="#trial">무료로 시작하기</a>
+    <span class="btn-note">가입 후 바로 사용하실 수 있습니다</span>
+  </div>
+</section>
+
+<!-- ② 기능 3개 -->
+<section class="features">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="label">FEATURES</div>
+      <h2>꾸준함을 도와드리는<br>세 가지 기능</h2>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </div>
+        <div class="num">01</div>
+        <h3>간편한 운동 기록</h3>
+        <p>종목, 무게, 횟수를 몇 번의 터치로 남기실 수 있습니다. 운동 중에도 번거롭지 않습니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/></svg>
+        </div>
+        <div class="num">02</div>
+        <h3>한눈에 보는 성장 그래프</h3>
+        <p>쌓인 기록이 그래프로 정리되어, 얼마나 성장하셨는지 바로 확인하실 수 있습니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <div class="num">03</div>
+        <h3>루틴 알림</h3>
+        <p>정해 두신 운동 시간에 알림을 보내 드려, 바쁜 날에도 루틴을 놓치지 않게 도와드립니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ③ 무료체험 -->
+<section class="cta" id="trial">
+  <div class="wrap">
+    <div class="cta-box">
+      <h2>지금 무료로<br>시작해 보세요</h2>
+      <p>부담 없이 체험해 보시고, 기록하는 습관을 만들어 보세요.</p>
+      <a class="btn" href="#">무료체험 시작하기</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <button class="foot-install" type="button" data-open-guide>📲 홈 화면에 앱 설치하는 방법</button>
+  <div>© COACH K</div>
+</footer>
+
+
+<!-- ───────── 처음 방문 시 아래에서 올라오는 설치 안내 ───────── -->
+<div class="install-bar" id="installBar" role="dialog" aria-labelledby="ibTitle" aria-hidden="true">
+  <button class="ib-close" type="button" data-later aria-label="닫기">×</button>
+  <div class="row">
+    <img src="icons/icon-192.png" alt="COACH K 앱 아이콘">
+    <div>
+      <h2 id="ibTitle"><em>홈 화면</em>에 설치하세요</h2>
+      <p id="ibText">앱처럼 한 번에 열리고, 매일 기록하기가 훨씬 편해집니다.</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="ib-later" type="button" data-later>다음에 할게요</button>
+    <button class="ib-primary" type="button" id="ibPrimary">설치 방법 보기</button>
+  </div>
+</div>
+
+
+<!-- ───────── 설치 방법 안내 창 (아이폰 / 안드로이드) ───────── -->
+<div class="guide" id="guide" role="dialog" aria-modal="true" aria-labelledby="gTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="app">
+        <img src="icons/icon-192.png" alt="">
+        <div>
+          <h2 id="gTitle">홈 화면에 앱 설치하기</h2>
+          <p>1분이면 끝납니다. 따라 해 보세요.</p>
+        </div>
+      </div>
+      <button class="sheet-x" type="button" data-close-guide aria-label="닫기">×</button>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-ios" aria-controls="panel-ios" aria-selected="true">아이폰<span class="mine" data-mine="ios"></span></button>
+        <button class="tab" role="tab" id="tab-and" aria-controls="panel-and" aria-selected="false">안드로이드<span class="mine" data-mine="and"></span></button>
+      </div>
+    </div>
+
+    <div class="sheet-body">
+      <!-- 아이폰 -->
+      <section class="panel" id="panel-ios" role="tabpanel" aria-labelledby="tab-ios">
+        <p class="browser">사파리(Safari)에서 해 주세요</p>
+        <ol class="steps">
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="page"><div class="mock-hero"></div><div class="mock-line"></div><div class="mock-line s"></div><div class="mock-line"></div></div>
+              <div class="ios-bar">
+                <div class="ios-url">coachk 운동 기록</div>
+                <div class="ios-icons">
+                  <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                  <svg viewBox="0 0 24 24" style="opacity:.35"><path d="m9 18 6-6-6-6"/></svg>
+                  <span class="hit round"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 11v9h14v-9"/></svg></span>
+                  <svg viewBox="0 0 24 24"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3Z"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12" rx="2"/><path d="M8 20h10a2 2 0 0 0 2-2V8"/></svg>
+                </div>
+              </div>
+            </div></div>
+            <div class="txt">
+              <span class="no">1</span>
+              <h3>화면 아래 <span class="kbd"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 11v9h14v-9"/></svg></span> 공유 버튼을 누르세요</h3>
+              <p>공유 버튼이 안 보이면 오른쪽 아래 <span class="kbd">···</span> 를 누른 뒤 <b>공유</b>를 눌러 주세요.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="page"><div class="mock-hero"></div><div class="mock-line"></div></div>
+              <div class="dim"></div>
+              <div class="ios-sheet">
+                <div class="approw"><img src="icons/icon-192.png" alt=""><span>COACH K 운동 기록</span></div>
+                <div class="sheet-row"><span>복사</span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V4h12"/></svg></div>
+                <div class="sheet-row"><span>읽기 목록에 추가</span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg></div>
+                <div class="sheet-row hit"><span>홈 화면에 추가</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></div>
+                <div class="sheet-row"><span>책갈피 추가</span><svg viewBox="0 0 24 24"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3Z"/></svg></div>
+              </div>
+            </div></div>
+            <div class="txt">
+              <span class="no">2</span>
+              <h3>메뉴를 위로 올려 <b>‘홈 화면에 추가’</b>를 누르세요</h3>
+              <p>안 보이면 메뉴를 끝까지 내려 보세요.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="ios-add-top"><span class="blue">취소</span><span class="bold">홈 화면에 추가</span><span class="blue bold hit">추가</span></div>
+              <div class="ios-add-card"><img src="icons/icon-192.png" alt=""><div><div class="nm">코치K 기록</div><div class="u">coachk 운동 기록</div></div></div>
+              <div class="ios-toggle"><span>웹 앱으로 열기</span><span class="sw"></span></div>
+            </div></div>
+            <div class="txt">
+              <span class="no">3</span>
+              <h3>오른쪽 위 <b>‘추가’</b>를 누르세요</h3>
+              <p>‘웹 앱으로 열기’가 보이면 켜진 상태 그대로 두세요.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="home">
+                <div class="apps">
+                  <i class="app-ph"></i><i class="app-ph"></i><i class="app-ph"></i><i class="app-ph"></i>
+                  <i class="app-ph"></i><i class="app-ph"></i><i class="app-ph"></i><i class="app-ph"></i>
+                  <div class="app-ours"><img class="hit" src="icons/icon-192.png" alt=""><span>코치K 기록</span></div>
+                </div>
+              </div>
+            </div></div>
+            <div class="txt">
+              <span class="no">✓</span>
+              <h3>홈 화면에 <b>코치K 기록</b> 아이콘이 생깁니다</h3>
+              <p>이제 앱처럼 아이콘을 눌러 바로 여시면 됩니다.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="note"><b>카카오톡·인스타그램 안에서 여셨나요?</b><br>그 안에서는 설치가 안 됩니다. 오른쪽 아래(또는 위) 메뉴에서 <b>‘Safari로 열기’</b>를 누른 뒤 따라 해 주세요.</p>
+      </section>
+
+      <!-- 안드로이드 -->
+      <section class="panel" id="panel-and" role="tabpanel" aria-labelledby="tab-and" hidden>
+        <p class="browser">크롬(Chrome)에서 해 주세요</p>
+        <ol class="steps">
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="and-top">
+                <svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>
+                <div class="and-url">coachk 운동 기록</div>
+                <span class="and-dots hit round">⋮</span>
+              </div>
+              <div class="and-page"><div class="mock-hero"></div><div class="mock-line"></div><div class="mock-line s"></div><div class="mock-line"></div></div>
+            </div></div>
+            <div class="txt">
+              <span class="no">1</span>
+              <h3>오른쪽 위 <span class="kbd">⋮</span> 버튼을 누르세요</h3>
+              <p>점 3개가 세로로 있는 버튼입니다.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="and-top"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg><div class="and-url">coachk 운동 기록</div><span class="and-dots">⋮</span></div>
+              <div class="and-page"><div class="mock-hero"></div><div class="mock-line"></div></div>
+              <div class="dim" style="background:rgba(0,0,0,.18)"></div>
+              <div class="and-menu">
+                <div>새 탭</div>
+                <div>방문 기록</div>
+                <div>북마크</div>
+                <div class="hit">홈 화면에 추가</div>
+                <div>설정</div>
+              </div>
+            </div></div>
+            <div class="txt">
+              <span class="no">2</span>
+              <h3><b>‘홈 화면에 추가’</b> 또는 <b>‘앱 설치’</b>를 누르세요</h3>
+              <p>휴대폰마다 이름이 조금 다를 수 있습니다.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="and-page" style="top:0"><div class="mock-hero"></div><div class="mock-line"></div></div>
+              <div class="dim"></div>
+              <div class="and-dialog">
+                <div class="t">앱 설치</div>
+                <div class="who"><img src="icons/icon-maskable-192.png" alt=""><div><b>코치K 기록</b><span>coachk 운동 기록</span></div></div>
+                <div class="and-btns"><span>취소</span><span class="hit">설치</span></div>
+              </div>
+            </div></div>
+            <div class="txt">
+              <span class="no">3</span>
+              <h3><b>‘설치’</b>를 누르면 끝!</h3>
+              <p>‘홈 화면에 추가’ 창이 뜨면 <b>‘추가’</b>를 눌러 주세요.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="phone"><div class="scr">
+              <div class="home" style="background:linear-gradient(170deg,#1B2B3F,#2E5A6B 60%,#7FB09A)">
+                <div class="apps">
+                  <i class="app-ph" style="border-radius:50%"></i><i class="app-ph" style="border-radius:50%"></i><i class="app-ph" style="border-radius:50%"></i><i class="app-ph" style="border-radius:50%"></i>
+                  <i class="app-ph" style="border-radius:50%"></i><i class="app-ph" style="border-radius:50%"></i><i class="app-ph" style="border-radius:50%"></i><i class="app-ph" style="border-radius:50%"></i>
+                  <div class="app-ours"><img class="hit round" src="icons/icon-maskable-192.png" alt="" style="border-radius:50%"><span>코치K 기록</span></div>
+                </div>
+              </div>
+            </div></div>
+            <div class="txt">
+              <span class="no">✓</span>
+              <h3>홈 화면에 <b>코치K 기록</b> 아이콘이 생깁니다</h3>
+              <p>아이콘이 안 보이면 앱 목록(서랍)도 확인해 보세요.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="note"><b>삼성 인터넷을 쓰시나요?</b><br>아래쪽 <span class="kbd">≡</span> 메뉴 → <b>‘현재 페이지 추가’</b> → <b>‘홈 화면’</b>을 눌러 주세요.<br><br><b>카카오톡·인스타그램 안에서 여셨나요?</b><br>오른쪽 위 <span class="kbd">⋮</span> → <b>‘다른 브라우저로 열기’</b>를 누른 뒤 따라 해 주세요.</p>
+      </section>
+
+      <button class="done-btn" type="button" data-close-guide>확인했어요</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function () {
+  /* ───── 기본 정보 ───── */
+  var HIDE_KEY = 'coachk_install_hide_until';
+  var LATER_DAYS = 7;                 // '다음에 할게요'를 누르면 며칠 뒤에 다시 보여 줄지
+  var ua = navigator.userAgent || '';
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = !isAndroid && (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+  var isMobile = isIOS || isAndroid;
+  var isKakao = /KAKAOTALK/i.test(ua);
+  var isInApp = isKakao || /Instagram|FBAN|FBAV|NAVER\(inapp|Line\/|DaumApps|everytimeApp|; wv\)/i.test(ua);
+  var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  var deferredPrompt = null;
+
+  if (isStandalone) document.documentElement.classList.add('is-app');
+
+  function store(get, value) {
+    try {
+      if (get) return localStorage.getItem(HIDE_KEY);
+      localStorage.setItem(HIDE_KEY, String(value));
+    } catch (e) { return null; }
+  }
+
+  /* ───── 서비스 워커 등록 (홈 화면 설치에 필요) ───── */
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+
+  /* ───── 설치 방법 안내 창 ───── */
+  var guide = document.getElementById('guide');
+  var tabs = { ios: document.getElementById('tab-ios'), and: document.getElementById('tab-and') };
+  var panels = { ios: document.getElementById('panel-ios'), and: document.getElementById('panel-and') };
+  var lastFocus = null;
+
+  function selectTab(which) {
+    ['ios', 'and'].forEach(function (k) {
+      tabs[k].setAttribute('aria-selected', k === which ? 'true' : 'false');
+      panels[k].hidden = k !== which;
+    });
+  }
+  tabs.ios.addEventListener('click', function () { selectTab('ios'); });
+  tabs.and.addEventListener('click', function () { selectTab('and'); });
+  // 지금 쓰는 폰에 '내 폰' 표시
+  if (isIOS) document.querySelector('[data-mine="ios"]').textContent = '· 내 폰';
+  if (isAndroid) document.querySelector('[data-mine="and"]').textContent = '· 내 폰';
+
+  function openGuide() {
+    lastFocus = document.activeElement;
+    selectTab(isAndroid ? 'and' : 'ios');
+    guide.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    guide.querySelector('.sheet-body').scrollTop = 0;
+    guide.querySelector('.sheet-x').focus();
+  }
+  function closeGuide() {
+    guide.classList.remove('open');
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.querySelectorAll('[data-open-guide]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (deferredPrompt) { runInstall(); } else { openGuide(); }
+    });
+  });
+  document.querySelectorAll('[data-close-guide]').forEach(function (b) { b.addEventListener('click', closeGuide); });
+  guide.addEventListener('click', function (e) { if (e.target === guide) closeGuide(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && guide.classList.contains('open')) closeGuide(); });
+
+  /* ───── 처음 방문 시 뜨는 설치 안내 ───── */
+  var bar = document.getElementById('installBar');
+  var primary = document.getElementById('ibPrimary');
+  var ibText = document.getElementById('ibText');
+
+  function showBar() {
+    bar.classList.add('show');
+    bar.setAttribute('aria-hidden', 'false');
+  }
+  function hideBar(days) {
+    bar.classList.remove('show');
+    bar.setAttribute('aria-hidden', 'true');
+    if (days) store(false, Date.now() + days * 86400000);
+  }
+  document.querySelectorAll('[data-later]').forEach(function (b) {
+    b.addEventListener('click', function () { hideBar(LATER_DAYS); });
+  });
+
+  // 버튼 문구를 상황에 맞게 바꿈
+  function setupPrimary() {
+    if (isKakao) {
+      ibText.textContent = '카카오톡 안에서는 설치가 안 됩니다. 아래 버튼으로 ' + (isIOS ? 'Safari' : 'Chrome') + '에서 열어 주세요.';
+      primary.textContent = isIOS ? 'Safari로 열기' : 'Chrome으로 열기';
+      primary.onclick = function () {
+        location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+      };
+    } else if (isInApp) {
+      ibText.textContent = '지금 화면에서는 설치가 안 됩니다. 메뉴에서 ‘다른 브라우저로 열기’를 눌러 주세요.';
+      primary.textContent = '방법 보기';
+      primary.onclick = function () { hideBar(); openGuide(); };
+    } else if (deferredPrompt) {
+      primary.textContent = '지금 설치하기';
+      primary.onclick = runInstall;
+    } else {
+      primary.textContent = '설치 방법 보기';
+      primary.onclick = function () { hideBar(); openGuide(); };
+    }
+  }
+
+  // 안드로이드 크롬: 버튼 한 번으로 바로 설치 창 띄우기
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    setupPrimary();
+  });
+  function runInstall() {
+    if (!deferredPrompt) { openGuide(); return; }
+    var p = deferredPrompt;
+    deferredPrompt = null;
+    p.prompt();
+    p.userChoice.then(function (r) {
+      hideBar(r && r.outcome === 'accepted' ? 3650 : LATER_DAYS);
+      setupPrimary();
+    }).catch(function () { setupPrimary(); });
+  }
+  window.addEventListener('appinstalled', function () {
+    hideBar(3650);
+    document.documentElement.classList.add('is-app');
+  });
+
+  setupPrimary();
+
+  // 폰으로, 아직 설치 안 한 사람에게만, 숨김 기간이 아닐 때 1.5초 뒤 표시
+  var hideUntil = Number(store(true) || 0);
+  if (isMobile && !isStandalone && Date.now() > hideUntil) {
+    setTimeout(showBar, 1500);
+  }
+})();
+</script>
+</body>
+</html>
